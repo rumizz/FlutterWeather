@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-PreferredSizeWidget weatherAppBar({required String title, Widget? image}) {
+PreferredSizeWidget weatherAppBar(
+    {required BuildContext context, required String title, Widget? image}) {
   double size = (image == null ? 100 : 300);
   return PreferredSize(
       preferredSize: Size.fromHeight(size),
       child: Container(
-          decoration: const BoxDecoration(
-            color: Colors.lightBlue,
-            borderRadius: BorderRadius.only(
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor,
+            borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(30),
                 bottomRight: Radius.circular(30)),
           ),

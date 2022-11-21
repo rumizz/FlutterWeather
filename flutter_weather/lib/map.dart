@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weather/locations.dart';
 import 'package:flutter_weather/navbutton.dart';
 
 import 'package:latlong2/latlong.dart';
@@ -15,43 +16,34 @@ class MapPage extends StatefulWidget {
 class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
-    final markers = <Marker>[
-      Marker(
-        width: 80,
-        height: 80,
-        point: LatLng(51.5, -0.09),
-        builder: (ctx) => const FlutterLogo(
-          textColor: Colors.blue,
-          key: ObjectKey(Colors.blue),
-        ),
-      ),
-      Marker(
-        width: 80,
-        height: 80,
-        point: LatLng(53.3498, -6.2603),
-        builder: (ctx) => const FlutterLogo(
-          textColor: Colors.green,
-          key: ObjectKey(Colors.green),
-        ),
-      ),
-      Marker(
-        width: 80,
-        height: 80,
-        point: LatLng(48.8566, 2.3522),
-        builder: (ctx) => const FlutterLogo(
-          textColor: Colors.purple,
-          key: ObjectKey(Colors.purple),
-        ),
-      ),
-    ];
+    final markers = locations
+        .map(
+          (location) => Marker(
+            width: 60,
+            height: 30,
+            point: LatLng(location.latitude, location.longitude),
+            builder: (ctx) => Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(0),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6)),
+                child: Text("18°C",
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).primaryColor,
+                        fontWeight: FontWeight.bold))),
+          ),
+        )
+        .toList();
     return Scaffold(
       body: Stack(
         children: [
           Flexible(
             child: FlutterMap(
               options: MapOptions(
-                center: LatLng(51.5, -0.09),
-                zoom: 5,
+                center: LatLng(47.079254, 19.329366),
+                zoom: 7,
               ),
               nonRotatedChildren: [
                 AttributionWidget.defaultWidget(

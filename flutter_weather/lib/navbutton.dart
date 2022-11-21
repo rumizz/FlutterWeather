@@ -6,11 +6,13 @@ Widget navButton(
     required String route}) {
   return Container(
       margin: const EdgeInsets.all(30),
+      constraints: const BoxConstraints(maxWidth: 800),
       child: ElevatedButton(
           onPressed: () {
             Navigator.pushNamed(context, route);
           },
           style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
               padding: const EdgeInsets.only(
                   top: 12, bottom: 12, left: 20, right: 20),
               shape: RoundedRectangleBorder(
@@ -24,7 +26,9 @@ Widget navButton(
                   child: Text(
                     text,
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
                   ))
             ],
           )));

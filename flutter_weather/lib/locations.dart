@@ -6,7 +6,7 @@ class Location {
   Location(this.name, this.latitude, this.longitude);
 }
 
-var locations = [
+final locations = [
   Location("Békéscsaba", 46.680, 21.100),
   Location("Budapest", 47.500, 19.083),
   Location("Debrecen", 47.530, 21.630),

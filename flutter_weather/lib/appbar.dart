@@ -27,7 +27,7 @@ PreferredSizeWidget weatherAppBar(
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 32,
-                        fontWeight: FontWeight.bold),
+                        fontWeight: FontWeight.w700),
                   ))
             ],
           )));

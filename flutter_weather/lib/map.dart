@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_weather/locations.dart';
 import 'package:flutter_weather/navbutton.dart';
@@ -20,22 +22,36 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  List data = [];
-
   Future<List<WeatherData>> getData() {
-    return Future.wait(locations
-        .map((location) => http
-                .get(Uri.parse(
-                    "https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=temperature_2m&current_weather=true"))
-                .then((value) {
-              var json = jsonDecode(value.body);
-              var temperature = json["current_weather"]["temperature"];
-              var time = json["current_weather"]["time"];
-              // TODO await upload if admin
-
-              return WeatherData(location, temperature, time);
-            }))
-        .toList());
+    var uuid = FirebaseAuth.instance.currentUser?.uid;
+    var db = FirebaseFirestore.instance;
+    bool admin = false;
+    return db
+        .collection('users')
+        .doc(uuid)
+        .get()
+        .then((user) => admin = user.data()!['admin'])
+        .then((_) => Future.wait(locations
+            .map((location) => http
+                    .get(Uri.parse(
+                        "https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=temperature_2m&current_weather=true"))
+                    .then((value) {
+                  var json = jsonDecode(value.body);
+                  var temperature = json["current_weather"]["temperature"];
+                  var time = json["current_weather"]["time"];
+                  var weatherCode = json["current_weather"]["weathercode"];
+                  weatherCode ??= 0;
+                  if (admin) {
+                    db.collection('history').add({
+                      "name": location.name,
+                      "temperature": temperature,
+                      "time": time,
+                      "weatherCode": weatherCode
+                    });
+                  }
+                  return WeatherData(location, temperature, time, weatherCode);
+                }))
+            .toList()));
   }
 
   @override
@@ -72,27 +88,24 @@ class _MapPageState extends State<MapPage> {
                   ),
                 )
                 .toList();
-            content = Flexible(
-              child: FlutterMap(
-                options: MapOptions(
-                  center: LatLng(47.079254, 19.329366),
-                  zoom: 7,
-                ),
-                nonRotatedChildren: [
-                  AttributionWidget.defaultWidget(
-                    source: 'OpenStreetMap contributors',
-                    onSourceTapped: () {},
-                  ),
-                ],
-                children: [
-                  TileLayer(
-                    urlTemplate:
-                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-                  ),
-                  MarkerLayer(markers: markers),
-                ],
+            content = FlutterMap(
+              options: MapOptions(
+                center: LatLng(47.079254, 19.329366),
+                zoom: 7,
               ),
+              nonRotatedChildren: [
+                AttributionWidget.defaultWidget(
+                  source: 'OpenStreetMap contributors',
+                  onSourceTapped: () {},
+                ),
+              ],
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+                ),
+                MarkerLayer(markers: markers),
+              ],
             );
           }
 

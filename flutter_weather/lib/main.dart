@@ -1,7 +1,11 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_weather/map.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'history.dart';
 import 'login.dart';
@@ -24,11 +28,12 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(
         primaryColor: Colors.blue[200],
-        //primarySwatch: Colors.cyan,
+        fontFamily: 'Poppins',
+        textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const LoginPage(),
+        '/': (context) => LoginPage(),
         '/map': (context) => const MapPage(),
         '/history': (context) => const HistoryPage(),
       },

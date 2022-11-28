@@ -1,14 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_weather/appbar.dart';
-import 'package:flutter_weather/navbutton.dart';
+import 'package:flutter_weather/component/appbar.dart';
+import 'package:flutter_weather/component/navbutton.dart';
 import "package:collection/collection.dart";
+import 'package:flutter_weather/network/firebase_api.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:intl/intl.dart';
 
-import 'locations.dart';
-import 'weather_data.dart';
+import '../data/weather_data.dart';
 
 class HistoryPage extends StatelessWidget {
   HistoryPage({super.key});
@@ -16,21 +15,7 @@ class HistoryPage extends StatelessWidget {
   final adminFormat = DateFormat('dd MMM yyyy HH:mm');
 
   Future<Map<DateTime, List<WeatherData>>> getData() {
-    return FirebaseFirestore.instance
-        .collection('history')
-        .get()
-        .then((value) => value.docs.map((snap) {
-              String name = snap.data()["name"];
-              num temperature = snap.data()["temperature"];
-              DateTime time = DateTime.parse(snap.data()["time"]);
-              int weatherCode = snap.data()["weatherCode"];
-
-              Location location = locations.firstWhere((l) => l.name == name);
-              return WeatherData(location, temperature, time, weatherCode);
-            }))
-        .then((Iterable<WeatherData> list) {
-      return groupBy(list, (WeatherData w) => w.time);
-    });
+    return FirebaseAPI.instance.getHistory();
   }
 
   @override
@@ -109,8 +94,7 @@ class HistoryPage extends StatelessWidget {
             color: Colors.grey[200]!,
             spreadRadius: 5,
             blurRadius: 7,
-
-            offset: const Offset(0, 4), // changes position of shadow
+            offset: const Offset(0, 4),
           ),
         ],
       ),

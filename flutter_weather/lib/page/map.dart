@@ -1,17 +1,13 @@
-import 'dart:convert';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_weather/locations.dart';
-import 'package:flutter_weather/navbutton.dart';
-import 'package:flutter_weather/weather_data.dart';
+import 'package:flutter_weather/component/navbutton.dart';
+import 'package:flutter_weather/network/firebase_api.dart';
+import 'package:flutter_weather/network/weather_api.dart';
+import 'package:flutter_weather/data/weather_data.dart';
 
 import 'package:latlong2/latlong.dart';
 import 'package:flutter_map/flutter_map.dart'; // Suitable for most situations
 import 'package:flutter_map/plugin_api.dart'; // Only import if required functionality is not exposed by default
 
-import 'package:http/http.dart' as http;
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class MapPage extends StatefulWidget {
@@ -23,35 +19,9 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   Future<List<WeatherData>> getData() {
-    var uuid = FirebaseAuth.instance.currentUser?.uid;
-    var db = FirebaseFirestore.instance;
-    bool admin = false;
-    DateTime time = DateTime.now();
-    return db
-        .collection('users')
-        .doc(uuid)
-        .get()
-        .then((user) => admin = user.data()!['admin'])
-        .then((_) => Future.wait(locations
-            .map((location) => http
-                    .get(Uri.parse(
-                        "https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&hourly=temperature_2m&current_weather=true"))
-                    .then((value) {
-                  var json = jsonDecode(value.body);
-                  var temperature = json["current_weather"]["temperature"];
-                  var weatherCode = json["current_weather"]["weathercode"];
-                  weatherCode ??= 0;
-                  if (admin) {
-                    db.collection('history').add({
-                      "name": location.name,
-                      "temperature": temperature,
-                      "time": time.toIso8601String(),
-                      "weatherCode": weatherCode
-                    });
-                  }
-                  return WeatherData(location, temperature, time, weatherCode);
-                }))
-            .toList()));
+    return WeatherAPI.instance
+        .getCurrentWeather()
+        .then(FirebaseAPI.instance.saveWeatherData);
   }
 
   @override
@@ -79,6 +49,14 @@ class _MapPageState extends State<MapPage> {
                         padding: const EdgeInsets.all(0),
                         decoration: BoxDecoration(
                             color: Colors.white,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey[300]!,
+                                spreadRadius: 2,
+                                blurRadius: 5,
+                                offset: const Offset(0, 0),
+                              ),
+                            ],
                             borderRadius: BorderRadius.circular(6)),
                         child: Text("${weatherData.temperature}°C",
                             style: TextStyle(
@@ -93,12 +71,6 @@ class _MapPageState extends State<MapPage> {
                 center: LatLng(47.079254, 19.329366),
                 zoom: 7,
               ),
-              nonRotatedChildren: [
-                AttributionWidget.defaultWidget(
-                  source: 'OpenStreetMap contributors',
-                  onSourceTapped: () {},
-                ),
-              ],
               children: [
                 TileLayer(
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',

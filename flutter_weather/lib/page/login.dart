@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_weather/appbar.dart';
+import 'package:flutter_weather/component/appbar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginPage extends StatefulWidget {
@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
         .signInWithEmailAndPassword(
             email: usernameController.text, password: passwordController.text)
         .then((UserCredential userCredential) =>
-            Navigator.pushNamed(context, "/map"))
+            Navigator.pushReplacementNamed(context, "/map"))
         .catchError((error) {
       setState(() {
         errorMessage =

@@ -32,7 +32,6 @@ class _LoginPageState extends State<LoginPage> {
         .then((UserCredential userCredential) =>
             Navigator.pushNamed(context, "/map"))
         .catchError((error) {
-      print("Failed: $error");
       setState(() {
         errorMessage =
             error.toString().substring(error.toString().indexOf("]") + 2);

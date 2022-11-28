@@ -1,47 +1,46 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_weather/appbar.dart';
 import 'package:flutter_weather/navbutton.dart';
 import "package:collection/collection.dart";
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:weather_icons/weather_icons.dart';
+import 'package:intl/intl.dart';
 
 import 'locations.dart';
 import 'weather_data.dart';
 
 class HistoryPage extends StatelessWidget {
-  const HistoryPage({super.key});
+  HistoryPage({super.key});
+  final normalFormat = DateFormat('MMM DD');
+  final adminFormat = DateFormat('dd MMM yyyy HH:mm');
 
-  Future<Map<String, List<WeatherData>>> getData() {
+  Future<Map<DateTime, List<WeatherData>>> getData() {
     return FirebaseFirestore.instance
         .collection('history')
         .get()
         .then((value) => value.docs.map((snap) {
               String name = snap.data()["name"];
               num temperature = snap.data()["temperature"];
-              String time = snap.data()["time"];
+              DateTime time = DateTime.parse(snap.data()["time"]);
               int weatherCode = snap.data()["weatherCode"];
-              weatherCode ??= 0;
 
               Location location = locations.firstWhere((l) => l.name == name);
               return WeatherData(location, temperature, time, weatherCode);
             }))
         .then((Iterable<WeatherData> list) {
       return groupBy(list, (WeatherData w) => w.time);
-    }).catchError((error, StackTrace stackTrace) =>
-            print("Failed to get history: $error " + stackTrace.toString()));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, List<WeatherData>>>(
+    return FutureBuilder<Map<DateTime, List<WeatherData>>>(
         future: getData(),
         builder: (BuildContext context,
-            AsyncSnapshot<Map<String, List<WeatherData>>> historyGroups) {
+            AsyncSnapshot<Map<DateTime, List<WeatherData>>> historyGroups) {
           Widget content;
 
-          print("history " + historyGroups.data.toString());
           if (!historyGroups.hasData) {
             content = LoadingAnimationWidget.discreteCircle(
                 color: Theme.of(context).primaryColor, size: 100);
@@ -52,11 +51,11 @@ class HistoryPage extends StatelessWidget {
                 padding:
                     const EdgeInsets.only(left: 30, right: 30, bottom: 120),
                 children: historyGroups.data!.values
+                    .sortedBy((element) => element[0].time)
+                    .reversed
                     .map<Widget>((List<WeatherData> value) =>
                         weatherHistoryGroup(
-                            context: context,
-                            data: value,
-                            date: value[0].time.toString()))
+                            context: context, data: value, date: value[0].time))
                     .toList());
           }
           return Scaffold(
@@ -71,23 +70,22 @@ class HistoryPage extends StatelessWidget {
 
   Widget weatherHistoryGroup(
       {required BuildContext context,
-      required String date,
+      required DateTime date,
       required List<WeatherData> data}) {
     var list = data
         .map((d) => weatherHistoryItem(
             context: context,
             city: d.location.name,
             weatherCode: d.weatherCode,
-            isDayTime: d.time.substring(11).compareTo("18:00") < 0 &&
-                d.time.substring(11).compareTo("06:00") > 0,
-            temperature: "${d.temperature}°C"))
+            isDayTime: d.time.hour >= 6 && d.time.hour < 18,
+            temperature: d.temperature))
         .toList();
 
     return Center(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
           padding: const EdgeInsets.only(bottom: 10, top: 16),
-          child: Text(date,
+          child: Text(adminFormat.format(date),
               style:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
       ...list
@@ -99,7 +97,7 @@ class HistoryPage extends StatelessWidget {
       required String city,
       required int weatherCode,
       required bool isDayTime,
-      required String temperature}) {
+      required num temperature}) {
     return Container(
       constraints: const BoxConstraints(maxWidth: 800),
       decoration: BoxDecoration(
@@ -129,7 +127,7 @@ class HistoryPage extends StatelessWidget {
                 fontSize: 20,
               )),
           const Spacer(),
-          Text(temperature,
+          Text("$temperature°C",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 28,
@@ -145,15 +143,9 @@ class HistoryPage extends StatelessWidget {
       case 0:
         return isDayTime ? WeatherIcons.day_sunny : WeatherIcons.night_clear;
       case 1:
-        return isDayTime
-            ? WeatherIcons.day_cloudy
-            : WeatherIcons.night_partly_cloudy;
       case 2:
-        return isDayTime ? WeatherIcons.day_cloudy : WeatherIcons.night_cloudy;
       case 3:
-        return isDayTime
-            ? WeatherIcons.day_sunny_overcast
-            : WeatherIcons.night_alt_cloudy;
+        return isDayTime ? WeatherIcons.day_cloudy : WeatherIcons.night_cloudy;
       case 45:
       case 48:
         return isDayTime ? WeatherIcons.day_fog : WeatherIcons.night_fog;

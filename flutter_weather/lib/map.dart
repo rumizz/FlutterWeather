@@ -26,6 +26,7 @@ class _MapPageState extends State<MapPage> {
     var uuid = FirebaseAuth.instance.currentUser?.uid;
     var db = FirebaseFirestore.instance;
     bool admin = false;
+    DateTime time = DateTime.now();
     return db
         .collection('users')
         .doc(uuid)
@@ -38,14 +39,13 @@ class _MapPageState extends State<MapPage> {
                     .then((value) {
                   var json = jsonDecode(value.body);
                   var temperature = json["current_weather"]["temperature"];
-                  var time = json["current_weather"]["time"];
                   var weatherCode = json["current_weather"]["weathercode"];
                   weatherCode ??= 0;
                   if (admin) {
                     db.collection('history').add({
                       "name": location.name,
                       "temperature": temperature,
-                      "time": time,
+                      "time": time.toIso8601String(),
                       "weatherCode": weatherCode
                     });
                   }

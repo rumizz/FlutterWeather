@@ -73,6 +73,7 @@ class HistoryPage extends StatelessWidget {
       required DateTime date,
       required List<WeatherData> data}) {
     var list = data
+        .sortedBy((element) => element.location.name)
         .map((d) => weatherHistoryItem(
             context: context,
             city: d.location.name,

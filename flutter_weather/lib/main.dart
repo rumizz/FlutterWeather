@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
       initialRoute: FirebaseAPI.instance.isLoggedIn() ? '/map' : '/',
       routes: {
         '/': (context) => const LoginPage(),
-        '/map': (context) => withLoggedIn(context, const MapPage()),
+        '/map': (context) => withLoggedIn(context, MapPage()),
         '/history': (context) => withLoggedIn(context, HistoryPage()),
       },
     );

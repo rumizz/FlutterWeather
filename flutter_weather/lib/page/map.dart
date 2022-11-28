@@ -10,14 +10,9 @@ import 'package:flutter_map/plugin_api.dart'; // Only import if required functio
 
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
-class MapPage extends StatefulWidget {
+class MapPage extends StatelessWidget {
   const MapPage({super.key});
 
-  @override
-  State<MapPage> createState() => _MapPageState();
-}
-
-class _MapPageState extends State<MapPage> {
   Future<List<WeatherData>> getData() {
     return WeatherAPI.instance
         .getCurrentWeather()

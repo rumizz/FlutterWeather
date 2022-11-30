@@ -18,13 +18,17 @@ class WeatherNotifier with ChangeNotifier {
     Timer.periodic(const Duration(minutes: 1), (Timer t) => fetch());
   }
   void fetch() {
-    print("update");
     WeatherAPI.instance.getCurrentWeather().then((value) {
       _currentWeather = value;
-    }).then((value) => FirebaseAPI.instance.getHistory().then((value) {
+      _loading = false;
+      notifyListeners();
+    });
+    /*
+    .then((value) => FirebaseAPI.instance.getHistory().then((value) {
           _history = value;
           _loading = false;
           notifyListeners();
         }));
+        */
   }
 }

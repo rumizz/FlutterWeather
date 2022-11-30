@@ -2,8 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../data/locations.dart';
-import '../data/weather_data.dart';
+import '../weather/locations.dart';
+import '../weather/weather_data.dart';
 
 class FirebaseAPI {
   static final FirebaseAPI instance = FirebaseAPI._internal();
@@ -11,23 +11,20 @@ class FirebaseAPI {
     return instance;
   }
 
-  bool isLoggedIn() {
-    try {
-      return FirebaseAuth.instance.currentUser != null;
-    } catch (e) {
-      return false;
-    }
+  Future<bool> isAdmin() async {
+    return await FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .get()
+        .then((value) => value.data()?['admin'])
+        .catchError((_) => false);
   }
 
-  Future<List<WeatherData>> saveWeatherData(List<WeatherData> list) async {
-    var uuid = FirebaseAuth.instance.currentUser?.uid;
-    var db = FirebaseFirestore.instance;
-    bool admin = false;
-    return db.collection('users').doc(uuid).get().then((user) {
-      admin = user.data()!['admin'];
-      if (!admin) return list;
+  Future<List<WeatherData>> saveWeatherData(List<WeatherData> list) {
+    return isAdmin().then((isAdmin) {
+      if (!isAdmin) return list;
       return Future.wait(list.map((data) {
-        return db.collection('history').add({
+        return FirebaseFirestore.instance.collection('history').add({
           "name": data.location.name,
           "temperature": data.temperature,
           "time": data.time.toIso8601String(),

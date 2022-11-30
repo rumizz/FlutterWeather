@@ -3,13 +3,16 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_weather/network/firebase_api.dart';
-import 'package:flutter_weather/page/history.dart';
-import 'package:flutter_weather/page/map.dart';
+import 'package:flutter_weather/login/login_notifier.dart';
+import 'package:flutter_weather/weather/history.dart';
+import 'package:flutter_weather/weather/map.dart';
+import 'package:flutter_weather/weather/route_notifier.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'network/firebase_options.dart';
-import 'page/login.dart';
+import 'package:provider/provider.dart';
+import 'weather/weather_notifier.dart';
+import 'firebase/firebase_options.dart';
+import 'login/login.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,15 +33,6 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  Widget withLoggedIn(BuildContext context, Widget widget) {
-    if (FirebaseAPI.instance.isLoggedIn()) {
-      return widget;
-    } else {
-      Navigator.pushReplacementNamed(context, "/");
-      return const Text("Loading...");
-    }
-  }
-
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
@@ -49,11 +43,33 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Poppins',
         textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
       ),
-      initialRoute: FirebaseAPI.instance.isLoggedIn() ? '/map' : '/',
-      routes: {
-        '/': (context) => const LoginPage(),
-        '/map': (context) => withLoggedIn(context, MapPage()),
-        '/history': (context) => withLoggedIn(context, HistoryPage()),
+      builder: (BuildContext context, _) {
+        return ChangeNotifierProvider<LoginNotifier>(
+            create: (_) => LoginNotifier(),
+            builder: (context, _) {
+              if (context.watch<LoginNotifier>().loading) {
+                return Center(
+                    child: LoadingAnimationWidget.discreteCircle(
+                        color: Theme.of(context).primaryColor, size: 50));
+              }
+              if (!context.watch<LoginNotifier>().loggedIn) {
+                return const LoginPage();
+              } else {
+                return MultiProvider(
+                    providers: [
+                      ChangeNotifierProvider<WeatherNotifier>(
+                          create: (_) => WeatherNotifier()),
+                      ChangeNotifierProvider<RouteNotifier>(
+                          create: (_) => RouteNotifier()),
+                    ],
+                    builder: (context, _) {
+                      String route = context.watch<RouteNotifier>().route;
+                      return route == "history"
+                          ? HistoryPage()
+                          : const MapPage();
+                    });
+              }
+            });
       },
     );
   }

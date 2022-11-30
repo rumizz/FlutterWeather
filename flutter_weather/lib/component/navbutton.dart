@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weather/weather/route_notifier.dart';
+import 'package:provider/provider.dart';
 
 Widget navButton(
     {required BuildContext context,
@@ -9,7 +11,7 @@ Widget navButton(
       constraints: const BoxConstraints(maxWidth: 800),
       child: ElevatedButton(
           onPressed: () {
-            Navigator.pushNamed(context, route);
+            context.read<RouteNotifier>().setRoute(route);
           },
           style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,

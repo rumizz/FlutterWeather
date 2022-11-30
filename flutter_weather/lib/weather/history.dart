@@ -2,55 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_weather/component/appbar.dart';
 import 'package:flutter_weather/component/navbutton.dart';
 import "package:collection/collection.dart";
-import 'package:flutter_weather/network/firebase_api.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:flutter_weather/weather/weather_notifier.dart';
+import 'package:provider/provider.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:intl/intl.dart';
 
-import '../data/weather_data.dart';
+import 'weather_data.dart';
 
 class HistoryPage extends StatelessWidget {
   HistoryPage({super.key});
   final normalFormat = DateFormat('MMM DD');
   final adminFormat = DateFormat('dd MMM yyyy HH:mm');
 
-  Future<Map<DateTime, List<WeatherData>>> getData() {
-    return FirebaseAPI.instance.getHistory();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<DateTime, List<WeatherData>>>(
-        future: getData(),
-        builder: (BuildContext context,
-            AsyncSnapshot<Map<DateTime, List<WeatherData>>> historyGroups) {
-          Widget content;
-
-          if (!historyGroups.hasData) {
-            content = LoadingAnimationWidget.discreteCircle(
-                color: Theme.of(context).primaryColor, size: 100);
-          } else if (historyGroups.data!.isEmpty) {
-            content = const Text("No data");
-          } else {
-            content = ListView(
-                padding:
-                    const EdgeInsets.only(left: 30, right: 30, bottom: 120),
-                children: historyGroups.data!.values
-                    .sortedBy((element) => element[0].time)
-                    .reversed
-                    .map<Widget>((List<WeatherData> value) =>
-                        weatherHistoryGroup(
-                            context: context, data: value, date: value[0].time))
-                    .toList());
-          }
-          return Scaffold(
-              appBar: weatherAppBar(context: context, title: "History"),
-              floatingActionButton:
-                  navButton(context: context, text: "See map", route: "/map"),
-              floatingActionButtonLocation:
-                  FloatingActionButtonLocation.centerFloat,
-              body: Center(child: content));
-        });
+    Widget content;
+    final historyGroups = context.watch<WeatherNotifier>().history;
+    if (historyGroups.isEmpty) {
+      content = const Text("No data");
+    } else {
+      content = ListView(
+          padding: const EdgeInsets.only(left: 30, right: 30, bottom: 120),
+          children: historyGroups.values
+              .sortedBy((element) => element[0].time)
+              .reversed
+              .map<Widget>((List<WeatherData> value) => weatherHistoryGroup(
+                  context: context, data: value, date: value[0].time))
+              .toList());
+    }
+    return Scaffold(
+        appBar: weatherAppBar(context: context, title: "History"),
+        floatingActionButton:
+            navButton(context: context, text: "See map", route: "map"),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        body: Center(child: content));
   }
 
   Widget weatherHistoryGroup(

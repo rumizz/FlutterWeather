@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_weather/component/appbar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_weather/login/login_notifier.dart';
+import 'package:provider/provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,20 +24,10 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  String errorMessage = "";
-
-  void login(BuildContext context) {
-    FirebaseAuth.instance
-        .signInWithEmailAndPassword(
-            email: usernameController.text, password: passwordController.text)
-        .then((UserCredential userCredential) =>
-            Navigator.pushReplacementNamed(context, "/map"))
-        .catchError((error) {
-      setState(() {
-        errorMessage =
-            error.toString().substring(error.toString().indexOf("]") + 2);
-      });
-    });
+  void login() {
+    context
+        .read<LoginNotifier>()
+        .login(usernameController.text, passwordController.text);
   }
 
   @override
@@ -76,7 +67,7 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8))),
                     ),
-                    onFieldSubmitted: (value) => login(context),
+                    onFieldSubmitted: (value) => login(),
                   ),
                   const Padding(
                       padding: EdgeInsets.only(top: 16, bottom: 5),
@@ -99,12 +90,12 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.all(Radius.circular(8))),
                     ),
                     obscureText: true,
-                    onFieldSubmitted: (value) => login(context),
+                    onFieldSubmitted: (value) => login(),
                   ),
                   Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 5),
                       child: Text(
-                        errorMessage,
+                        context.read<LoginNotifier>().error,
                         style: const TextStyle(color: Colors.red),
                       )),
                   Container(
@@ -112,7 +103,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: ElevatedButton(
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                              login(context);
+                              login();
                             }
                           },
                           style: ElevatedButton.styleFrom(

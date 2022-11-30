@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_weather/component/appbar.dart';
 import 'package:flutter_weather/component/navbutton.dart';
 import "package:collection/collection.dart";
+import 'package:flutter_weather/login/login_notifier.dart';
 import 'package:flutter_weather/weather/weather_notifier.dart';
 import 'package:provider/provider.dart';
 import 'package:weather_icons/weather_icons.dart';
@@ -56,7 +57,9 @@ class HistoryPage extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Padding(
           padding: const EdgeInsets.only(bottom: 10, top: 16),
-          child: Text(adminFormat.format(date),
+          child: Text(
+              (context.read<LoginNotifier>().admin ? adminFormat : normalFormat)
+                  .format(date),
               style:
                   const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
       ...list

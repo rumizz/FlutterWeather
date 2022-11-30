@@ -12,6 +12,9 @@ class FirebaseAPI {
   }
 
   Future<bool> isAdmin() async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      return false;
+    }
     return await FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser?.uid)
@@ -47,9 +50,8 @@ class FirebaseAPI {
                 Location location = locations.firstWhere((l) => l.name == name);
                 return WeatherData(location, temperature, time, weatherCode);
               }))
-          .then((Iterable<WeatherData> list) {
-        return groupBy(list, (WeatherData w) => w.time);
-      });
+          .then((Iterable<WeatherData> list) =>
+              groupBy(list, (WeatherData w) => w.time));
 
   FirebaseAPI._internal();
 }

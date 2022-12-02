@@ -7,6 +7,9 @@ import '../weather/weather_data.dart';
 
 class FirebaseAPI {
   static final FirebaseAPI instance = FirebaseAPI._internal();
+
+  DateTime _lastDate = DateTime.now();
+
   factory FirebaseAPI() {
     return instance;
   }
@@ -19,8 +22,7 @@ class FirebaseAPI {
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser?.uid)
         .get()
-        .then((value) => value.data()?['admin'])
-        .catchError((_) => false);
+        .then((value) => value.data()?['admin'] ?? false);
   }
 
   Future<List<WeatherData>> saveWeatherData(List<WeatherData> list) {
@@ -37,9 +39,12 @@ class FirebaseAPI {
     });
   }
 
-  Future<Map<DateTime, List<WeatherData>>> getHistory() =>
+  Future<Map<DateTime, List<WeatherData>>> getHistory(int page) =>
       FirebaseFirestore.instance
           .collection('history')
+          .orderBy('time', descending: true)
+          .startAfter([_lastDate.toIso8601String()])
+          .limit(locations.length * 2)
           .get()
           .then((value) => value.docs.map((snap) {
                 String name = snap.data()["name"];
@@ -48,10 +53,10 @@ class FirebaseAPI {
                 int weatherCode = snap.data()["weatherCode"];
 
                 Location location = locations.firstWhere((l) => l.name == name);
+                _lastDate = time;
                 return WeatherData(location, temperature, time, weatherCode);
               }))
-          .then((Iterable<WeatherData> list) =>
-              groupBy(list, (WeatherData w) => w.time));
+          .then((data) => groupBy(data, (data) => data.time));
 
   FirebaseAPI._internal();
 }

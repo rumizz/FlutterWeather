@@ -39,12 +39,12 @@ class FirebaseAPI {
     });
   }
 
-  Future<Map<DateTime, List<WeatherData>>> getHistory(int page) =>
+  Future<Map<DateTime, List<WeatherData>>> getHistory() =>
       FirebaseFirestore.instance
           .collection('history')
           .orderBy('time', descending: true)
           .startAfter([_lastDate.toIso8601String()])
-          .limit(locations.length * 2)
+          .limit(locations.length)
           .get()
           .then((value) => value.docs.map((snap) {
                 String name = snap.data()["name"];

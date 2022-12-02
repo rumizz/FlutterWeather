@@ -21,7 +21,7 @@ class HistoryPage extends StatefulWidget {
 class HistoryPageState extends State<HistoryPage> {
   final normalFormat = DateFormat('MMM dd');
   final adminFormat = DateFormat('dd MMM yyyy HH:mm');
-  static const _pageSize = 2;
+  static const _pageSize = 1;
   final PagingController<int, List<WeatherData>> _pagingController =
       PagingController(firstPageKey: 0);
 
@@ -36,7 +36,7 @@ class HistoryPageState extends State<HistoryPage> {
   Future<void> _fetchPage(int pageKey) async {
     try {
       final newItems =
-          (await FirebaseAPI.instance.getHistory(pageKey)).values.toList();
+          (await FirebaseAPI.instance.getHistory()).values.toList();
       final isLastPage = newItems.length < _pageSize;
       if (isLastPage) {
         _pagingController.appendLastPage(newItems);
@@ -57,14 +57,20 @@ class HistoryPageState extends State<HistoryPage> {
             navButton(context: context, text: "See map", route: "map"),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         body: Center(
-            child: PagedListView<int, List<WeatherData>>(
-                pagingController: _pagingController,
-                builderDelegate: PagedChildBuilderDelegate<List<WeatherData>>(
-                    itemBuilder: (context, data, index) => weatherHistoryGroup(
-                          context: context,
-                          time: data[0].time,
-                          data: data,
-                        )))));
+            child: RefreshIndicator(
+                onRefresh: () => Future.sync(
+                      () => _pagingController.refresh(),
+                    ),
+                child: PagedListView<int, List<WeatherData>>(
+                    pagingController: _pagingController,
+                    builderDelegate:
+                        PagedChildBuilderDelegate<List<WeatherData>>(
+                            itemBuilder: (context, data, index) =>
+                                weatherHistoryGroup(
+                                  context: context,
+                                  time: data[0].time,
+                                  data: data,
+                                ))))));
   }
 
   Widget weatherHistoryGroup(

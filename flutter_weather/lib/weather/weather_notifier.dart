@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather/firebase/firebase_api.dart';
 import 'package:flutter_weather/weather/weather_api.dart';
 
 import 'weather_data.dart';
@@ -10,8 +9,6 @@ class WeatherNotifier with ChangeNotifier {
   bool get loading => _loading;
   List<WeatherData> _currentWeather = [];
   List<WeatherData> get currentWeather => _currentWeather;
-  Map<DateTime, List<WeatherData>> _history = {};
-  Map<DateTime, List<WeatherData>> get history => _history;
 
   WeatherNotifier() {
     fetch();
@@ -23,12 +20,5 @@ class WeatherNotifier with ChangeNotifier {
       _loading = false;
       notifyListeners();
     });
-    /*
-    .then((value) => FirebaseAPI.instance.getHistory().then((value) {
-          _history = value;
-          _loading = false;
-          notifyListeners();
-        }));
-        */
   }
 }

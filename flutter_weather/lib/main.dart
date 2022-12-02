@@ -65,7 +65,7 @@ class MyApp extends StatelessWidget {
                     builder: (context, _) {
                       String route = context.watch<RouteNotifier>().route;
                       return route == "history"
-                          ? HistoryPage()
+                          ? const HistoryPage()
                           : const MapPage();
                     });
               }

@@ -2,46 +2,74 @@ import 'package:flutter/material.dart';
 import 'package:flutter_weather/component/appbar.dart';
 import 'package:flutter_weather/component/navbutton.dart';
 import "package:collection/collection.dart";
+import 'package:flutter_weather/firebase/firebase_api.dart';
 import 'package:flutter_weather/login/login_notifier.dart';
-import 'package:flutter_weather/weather/weather_notifier.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:intl/intl.dart';
 
 import 'weather_data.dart';
 
-class HistoryPage extends StatelessWidget {
-  HistoryPage({super.key});
-  final normalFormat = DateFormat('MMM DD');
+class HistoryPage extends StatefulWidget {
+  const HistoryPage({Key? key}) : super(key: key);
+
+  @override
+  HistoryPageState createState() => HistoryPageState();
+}
+
+class HistoryPageState extends State<HistoryPage> {
+  final normalFormat = DateFormat('MMM dd');
   final adminFormat = DateFormat('dd MMM yyyy HH:mm');
+  static const _pageSize = 2;
+  final PagingController<int, List<WeatherData>> _pagingController =
+      PagingController(firstPageKey: 0);
+
+  @override
+  void initState() {
+    _pagingController.addPageRequestListener((pageKey) {
+      _fetchPage(pageKey);
+    });
+    super.initState();
+  }
+
+  Future<void> _fetchPage(int pageKey) async {
+    try {
+      final newItems =
+          (await FirebaseAPI.instance.getHistory(pageKey)).values.toList();
+      final isLastPage = newItems.length < _pageSize;
+      if (isLastPage) {
+        _pagingController.appendLastPage(newItems);
+      } else {
+        final nextPageKey = pageKey + newItems.length;
+        _pagingController.appendPage(newItems, nextPageKey);
+      }
+    } catch (error) {
+      _pagingController.error = error;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    Widget content;
-    final historyGroups = context.watch<WeatherNotifier>().history;
-    if (historyGroups.isEmpty) {
-      content = const Text("No data");
-    } else {
-      content = ListView(
-          padding: const EdgeInsets.only(left: 30, right: 30, bottom: 120),
-          children: historyGroups.values
-              .sortedBy((element) => element[0].time)
-              .reversed
-              .map<Widget>((List<WeatherData> value) => weatherHistoryGroup(
-                  context: context, data: value, date: value[0].time))
-              .toList());
-    }
     return Scaffold(
         appBar: weatherAppBar(context: context, title: "History"),
         floatingActionButton:
             navButton(context: context, text: "See map", route: "map"),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-        body: Center(child: content));
+        body: Center(
+            child: PagedListView<int, List<WeatherData>>(
+                pagingController: _pagingController,
+                builderDelegate: PagedChildBuilderDelegate<List<WeatherData>>(
+                    itemBuilder: (context, data, index) => weatherHistoryGroup(
+                          context: context,
+                          time: data[0].time,
+                          data: data,
+                        )))));
   }
 
   Widget weatherHistoryGroup(
       {required BuildContext context,
-      required DateTime date,
+      required DateTime time,
       required List<WeatherData> data}) {
     var list = data
         .sortedBy((element) => element.location.name)
@@ -53,17 +81,22 @@ class HistoryPage extends StatelessWidget {
             temperature: d.temperature))
         .toList();
 
-    return Center(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Padding(
-          padding: const EdgeInsets.only(bottom: 10, top: 16),
-          child: Text(
-              (context.read<LoginNotifier>().admin ? adminFormat : normalFormat)
-                  .format(date),
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold))),
-      ...list
-    ]));
+    return Padding(
+        padding: const EdgeInsets.only(left: 32, right: 32, top: 16),
+        child: Center(
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Padding(
+              padding: const EdgeInsets.only(bottom: 10, top: 10),
+              child: Text(
+                  (context.read<LoginNotifier>().admin
+                          ? adminFormat
+                          : normalFormat)
+                      .format(time),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold))),
+          ...list
+        ])));
   }
 
   Widget weatherHistoryItem(

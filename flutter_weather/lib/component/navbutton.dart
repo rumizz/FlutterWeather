@@ -15,8 +15,7 @@ Widget navButton(
           },
           style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).primaryColor,
-              padding: const EdgeInsets.only(
-                  top: 12, bottom: 12, left: 20, right: 20),
+              padding: const EdgeInsets.only(left: 20, right: 20),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100))),
           child: Row(

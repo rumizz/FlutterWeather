@@ -33,12 +33,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: weatherAppBar(
-            context: context,
-            title: "Log In",
-            image: SvgPicture.asset("weather1.svg",
-                semanticsLabel: 'Weather logo', height: 200)),
-        body: Center(
+      appBar: weatherAppBar(
+          context: context,
+          title: "Log In",
+          image: SvgPicture.asset("assets/weather1.svg",
+              semanticsLabel: 'Weather logo', height: 200)),
+      body: Center(
+        child: SingleChildScrollView(
           child: Container(
             margin: const EdgeInsets.all(30),
             constraints: const BoxConstraints(maxWidth: 800),
@@ -108,8 +109,6 @@ class _LoginPageState extends State<LoginPage> {
                           },
                           style: ElevatedButton.styleFrom(
                               backgroundColor: Theme.of(context).primaryColor,
-                              padding:
-                                  const EdgeInsets.only(top: 12, bottom: 12),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(100))),
                           child: Row(
@@ -121,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
                                     'Log In',
                                     style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 18,
+                                        fontSize: 24,
                                         fontWeight: FontWeight.bold),
                                   ))
                             ],
@@ -130,6 +129,8 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-        ));
+        ),
+      ),
+    );
   }
 }

@@ -55,6 +55,7 @@ class MapPage extends StatelessWidget {
           .toList();
       content = FlutterMap(
         options: MapOptions(
+          interactiveFlags: InteractiveFlag.pinchZoom | InteractiveFlag.drag,
           center: LatLng(47.079254, 19.329366),
           zoom: 7,
         ),

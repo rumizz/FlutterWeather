@@ -61,16 +61,21 @@ class HistoryPageState extends State<HistoryPage> {
                 onRefresh: () => Future.sync(
                       () => _pagingController.refresh(),
                     ),
-                child: PagedListView<int, List<WeatherData>>(
-                    pagingController: _pagingController,
-                    builderDelegate:
-                        PagedChildBuilderDelegate<List<WeatherData>>(
-                            itemBuilder: (context, data, index) =>
-                                weatherHistoryGroup(
-                                  context: context,
-                                  time: data[0].time,
-                                  data: data,
-                                ))))));
+                child: CustomScrollView(slivers: <Widget>[
+                  PagedSliverList<int, List<WeatherData>>(
+                      pagingController: _pagingController,
+                      builderDelegate:
+                          PagedChildBuilderDelegate<List<WeatherData>>(
+                              itemBuilder: (context, data, index) =>
+                                  weatherHistoryGroup(
+                                    context: context,
+                                    time: data[0].time,
+                                    data: data,
+                                  ))),
+                  const SliverPadding(
+                    padding: EdgeInsets.all(60),
+                  ),
+                ]))));
   }
 
   Widget weatherHistoryGroup(
@@ -132,7 +137,7 @@ class HistoryPageState extends State<HistoryPage> {
           Padding(
               padding: const EdgeInsets.only(right: 15),
               child: BoxedIcon(getWeatherIcon(weatherCode, isDayTime),
-                  size: 40, color: Theme.of(context).primaryColor)),
+                  size: 32, color: Theme.of(context).primaryColor)),
           Text(city,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
@@ -142,7 +147,7 @@ class HistoryPageState extends State<HistoryPage> {
           Text("$temperature°C",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 28,
+                fontSize: 20,
                 color: Theme.of(context).primaryColor,
               )),
         ],

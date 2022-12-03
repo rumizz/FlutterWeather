@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 
 import '../weather/locations.dart';
 import '../weather/weather_data.dart';
@@ -47,6 +48,9 @@ class FirebaseAPI {
           .limit(locations.length)
           .get()
           .then((value) => value.docs.map((snap) {
+                if (kDebugMode) {
+                  print("history item: ${snap.data()}");
+                }
                 String name = snap.data()["name"];
                 num temperature = snap.data()["temperature"];
                 DateTime time = DateTime.parse(snap.data()["time"]);

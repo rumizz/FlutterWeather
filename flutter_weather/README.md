@@ -1,16 +1,16 @@
-# flutter_weather
+# FlutterWeather
+An application displaying current and historic weather data at Hungarian county seats.
+# Specification
+See https://docs.google.com/document/d/1ra0RvqVrHObpckcLPVOH_YXnq2yvysvT/edit
 
-A new Flutter project.
+# Authentication
+## Admin users
+- admin
+- admin1 
 
-## Getting Started
+Password: adminadmin
+## Normal users
+- user
+- user1
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Password: 12345678

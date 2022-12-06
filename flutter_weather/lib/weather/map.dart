@@ -7,9 +7,8 @@ import 'package:flutter_weather/weather/weather_notifier.dart';
 import 'package:flutter_weather/weather/weather_data.dart';
 
 import 'package:latlong2/latlong.dart';
-import 'package:flutter_map/flutter_map.dart'; // Suitable for most situations
-import 'package:flutter_map/plugin_api.dart'; // Only import if required functionality is not exposed by default
-
+import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map/plugin_api.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 

@@ -1,4 +1,7 @@
+import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_weather/component/navbutton.dart';
 import 'package:flutter_weather/weather/weather_notifier.dart';
 import 'package:flutter_weather/weather/weather_data.dart';
@@ -10,8 +13,57 @@ import 'package:flutter_map/plugin_api.dart'; // Only import if required functio
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:provider/provider.dart';
 
-class MapPage extends StatelessWidget {
-  const MapPage({super.key});
+class MapPage extends StatefulWidget {
+  const MapPage({Key? key}) : super(key: key);
+
+  @override
+  MapPageState createState() => MapPageState();
+}
+
+class MapPageState extends State<MapPage> {
+  @override
+  void initState() {
+    super.initState();
+    BackButtonInterceptor.add(backInterceptor, zIndex: 2, name: "map_back");
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.removeByName("map_back");
+    super.dispose();
+  }
+
+  bool backInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Are you sure?"),
+          content: const Text("Do you want to log out?"),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () => Navigator.of(context).pop(true),
+            ),
+            TextButton(
+              child: const Text("Log Out"),
+              onPressed: () {
+                FirebaseAuth.instance.signOut().then((_) => SystemChannels
+                    .platform
+                    .invokeMethod('SystemNavigator.pop'));
+              },
+            ),
+            TextButton(
+              child: const Text("Exit"),
+              onPressed: () =>
+                  SystemChannels.platform.invokeMethod('SystemNavigator.pop'),
+            ),
+          ],
+        );
+      },
+    );
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {

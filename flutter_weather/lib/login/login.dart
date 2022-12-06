@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather/component/appbar.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:websafe_svg/websafe_svg.dart';
 import 'package:flutter_weather/login/login_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -18,7 +18,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void dispose() {
-    // Clean up the controller when the widget is disposed.
     usernameController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -36,7 +35,7 @@ class _LoginPageState extends State<LoginPage> {
       appBar: weatherAppBar(
           context: context,
           title: "Log In",
-          image: SvgPicture.asset("assets/weather1.svg",
+          image: WebsafeSvg.asset("assets/weather1.svg",
               semanticsLabel: 'Weather logo', height: 200)),
       body: Center(
         child: SingleChildScrollView(
@@ -68,7 +67,6 @@ class _LoginPageState extends State<LoginPage> {
                       border: OutlineInputBorder(
                           borderRadius: BorderRadius.all(Radius.circular(8))),
                     ),
-                    onFieldSubmitted: (value) => login(),
                   ),
                   const Padding(
                       padding: EdgeInsets.only(top: 16, bottom: 5),
@@ -91,7 +89,6 @@ class _LoginPageState extends State<LoginPage> {
                           borderRadius: BorderRadius.all(Radius.circular(8))),
                     ),
                     obscureText: true,
-                    onFieldSubmitted: (value) => login(),
                   ),
                   Padding(
                       padding: const EdgeInsets.only(top: 16, bottom: 5),

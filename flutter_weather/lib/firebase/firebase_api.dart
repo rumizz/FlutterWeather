@@ -8,9 +8,6 @@ import '../weather/weather_data.dart';
 
 class FirebaseAPI {
   static final FirebaseAPI instance = FirebaseAPI._internal();
-
-  DateTime _lastDate = DateTime.now();
-
   factory FirebaseAPI() {
     return instance;
   }
@@ -40,11 +37,11 @@ class FirebaseAPI {
     });
   }
 
-  Future<Map<DateTime, List<WeatherData>>> getHistory() =>
+  Future<Map<DateTime, List<WeatherData>>> getHistory(DateTime lastDate) =>
       FirebaseFirestore.instance
           .collection('history')
           .orderBy('time', descending: true)
-          .startAfter([_lastDate.toIso8601String()])
+          .startAfter([lastDate.toIso8601String()])
           .limit(locations.length)
           .get()
           .then((value) => value.docs.map((snap) {
@@ -57,7 +54,6 @@ class FirebaseAPI {
                 int weatherCode = snap.data()["weatherCode"];
 
                 Location location = locations.firstWhere((l) => l.name == name);
-                _lastDate = time;
                 return WeatherData(location, temperature, time, weatherCode);
               }))
           .then((data) => groupBy(data, (data) => data.time));

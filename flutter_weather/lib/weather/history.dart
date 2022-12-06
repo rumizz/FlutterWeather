@@ -4,10 +4,12 @@ import 'package:flutter_weather/component/navbutton.dart';
 import "package:collection/collection.dart";
 import 'package:flutter_weather/firebase/firebase_api.dart';
 import 'package:flutter_weather/login/login_notifier.dart';
+import 'package:flutter_weather/weather/route_notifier.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'package:intl/intl.dart';
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 
 import 'weather_data.dart';
 
@@ -25,19 +27,36 @@ class HistoryPageState extends State<HistoryPage> {
   final PagingController<int, List<WeatherData>> _pagingController =
       PagingController(firstPageKey: 0);
 
+  var _lastDate = DateTime.now();
+
   @override
   void initState() {
+    super.initState();
     _pagingController.addPageRequestListener((pageKey) {
       _fetchPage(pageKey);
     });
-    super.initState();
+    BackButtonInterceptor.add(backInterceptor, zIndex: 2, name: "history_back");
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.removeByName("history_back");
+    super.dispose();
+  }
+
+  bool backInterceptor(bool stopDefaultButtonEvent, RouteInfo info) {
+    context.read<RouteNotifier>().setRoute("map");
+    return true;
   }
 
   Future<void> _fetchPage(int pageKey) async {
     try {
       final newItems =
-          (await FirebaseAPI.instance.getHistory()).values.toList();
+          (await FirebaseAPI.instance.getHistory(_lastDate)).values.toList();
       final isLastPage = newItems.length < _pageSize;
+      if (newItems.isNotEmpty) {
+        _lastDate = newItems.last[0].time;
+      }
       if (isLastPage) {
         _pagingController.appendLastPage(newItems);
       } else {

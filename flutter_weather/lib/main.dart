@@ -37,40 +37,41 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Weather',
+      title: 'Current Weather',
       theme: ThemeData(
         primaryColor: Colors.blue[200],
         fontFamily: 'Poppins',
         textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
       ),
-      builder: (BuildContext context, _) {
-        return ChangeNotifierProvider<LoginNotifier>(
-            create: (_) => LoginNotifier(),
-            builder: (context, _) {
-              if (context.watch<LoginNotifier>().loading) {
-                return Center(
-                    child: LoadingAnimationWidget.discreteCircle(
-                        color: Theme.of(context).primaryColor, size: 50));
-              }
-              if (!context.watch<LoginNotifier>().loggedIn) {
-                return const LoginPage();
-              } else {
-                return MultiProvider(
-                    providers: [
-                      ChangeNotifierProvider<WeatherNotifier>(
-                          create: (_) => WeatherNotifier()),
-                      ChangeNotifierProvider<RouteNotifier>(
-                          create: (_) => RouteNotifier()),
-                    ],
-                    builder: (context, _) {
-                      String route = context.watch<RouteNotifier>().route;
-                      return route == "history"
-                          ? const HistoryPage()
-                          : const MapPage();
-                    });
-              }
-            });
-      },
+      home: Overlay(initialEntries: [
+        OverlayEntry(
+            builder: (context) => ChangeNotifierProvider<LoginNotifier>(
+                create: (_) => LoginNotifier(),
+                builder: (context, _) {
+                  if (context.watch<LoginNotifier>().loading) {
+                    return Center(
+                        child: LoadingAnimationWidget.discreteCircle(
+                            color: Theme.of(context).primaryColor, size: 50));
+                  }
+                  if (!context.watch<LoginNotifier>().loggedIn) {
+                    return const LoginPage();
+                  } else {
+                    return MultiProvider(
+                        providers: [
+                          ChangeNotifierProvider<WeatherNotifier>(
+                              create: (_) => WeatherNotifier()),
+                          ChangeNotifierProvider<RouteNotifier>(
+                              create: (_) => RouteNotifier()),
+                        ],
+                        builder: (context, _) {
+                          String route = context.watch<RouteNotifier>().route;
+                          return route == "history"
+                              ? const HistoryPage()
+                              : const MapPage();
+                        });
+                  }
+                }))
+      ]),
     );
   }
 }
